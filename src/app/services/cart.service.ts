@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Pizza } from '../models/pizza'
  
 export interface Product {
   id: number;
@@ -11,22 +13,76 @@ export interface Product {
   providedIn: 'root'
 })
 export class CartService {
-  data: Product[] = [
-    { id: 0, name: 'Pizza Salami', price: 8.99, amount: 1 },
-    { id: 1, name: 'Pizza Classic', price: 5.49, amount: 1 },
-    { id: 2, name: 'Sliced Bread', price: 4.99, amount: 1 },
-    { id: 3, name: 'Salad', price: 6.99, amount: 1 }
-  ];
+
+  results: string;
+  private readonly url = "https://api.ynov.jcatania.io/pizza";
  
   private cart = [];
   private cartItemCount = new BehaviorSubject(0);
  
-  constructor() {}
- 
-  getProducts() {
-    return this.data;
-  }
- 
+  constructor(private http: HttpClient) {}
+
+  sayHello(id: number){
+    console.log("sayHello('" + id + "')");
+}
+
+get()
+{
+    let rt: Array<Pizza> = new Array<Pizza>();
+    return new Promise<Array<Pizza>>(
+        resolve => {
+            this.http.get(this.url).subscribe((data:Array<any>) => {
+                for(let i=0; i < data.length; i++){
+                    rt.push(new Pizza(data[i]['id'], data[i]['nom'], data[i]['photo'], data[i]['prix'], data[i]['ingredients']))
+                }
+                resolve(rt);});
+        });
+}
+
+getById(id: Number)
+{
+    let rt: Pizza = new Pizza();
+    return new Promise<Pizza>(
+        resolve => {
+            this.http.get(this.url + "/" + id).subscribe((data:any) => {
+                let rt = new Pizza(data['id'], data['nom'], data['photo'], data['prix'], data['ingredients']);
+                resolve(rt);
+            });
+        });
+}
+
+post(pizza: Pizza){
+    return new Promise<Pizza>(
+        resolve => {
+            this.http.post(this.url, pizza).subscribe((data:any) => {
+                let rt = new Pizza(data['nom'], data['photo'], data['prix'], data['ingredients']);
+                resolve(rt);
+            });
+        });
+}
+
+delete(id: number){
+    let rt: Pizza = new Pizza();
+    return new Promise<Pizza>(
+        resolve => {
+            this.http.delete(this.url +"/"+ id).subscribe((data:any) => {
+                let rt = new Pizza(data['id'], data['nom'], data['photo'], data['prix'], data['ingredients']);
+                resolve(rt);
+            });
+        });
+
+}
+
+update(pizza: Pizza, pizzaId: number){
+    return new Promise<Pizza>(
+        resolve => {
+            this.http.put(this.url + "/" + pizzaId, pizza).subscribe((data:any) => {
+                let rt = new Pizza(data['nom'], data['photo'], data['prix'], data['ingredients']);
+                resolve(rt);
+            });
+        });
+}
+   
   getCart() {
     return this.cart;
   }
@@ -37,9 +93,9 @@ export class CartService {
  
   addProduct(product) {
     let added = false;
-    for (let p of this.cart) {
-      if (p.id === product.id) {
-        p.amount += 1;
+    for (let pizza of this.cart) {
+      if (pizza.id === product.id) {
+        pizza.amount += 1;
         added = true;
         break;
       }
@@ -51,10 +107,10 @@ export class CartService {
   }
  
   decreaseProduct(product) {
-    for (let [index, p] of this.cart.entries()) {
-      if (p.id === product.id) {
-        p.amount -= 1;
-        if (p.amount == 0) {
+    for (let [index, pizza] of this.cart.entries()) {
+      if (pizza.id === product.id) {
+        pizza.amount -= 1;
+        if (pizza.amount == 0) {
           this.cart.splice(index, 1);
         }
       }
@@ -63,9 +119,9 @@ export class CartService {
   }
  
   removeProduct(product) {
-    for (let [index, p] of this.cart.entries()) {
-      if (p.id === product.id) {
-        this.cartItemCount.next(this.cartItemCount.value - p.amount);
+    for (let [index, pizza] of this.cart.entries()) {
+      if (pizza.id === product.id) {
+        this.cartItemCount.next(this.cartItemCount.value - pizza.amount);
         this.cart.splice(index, 1);
       }
     }

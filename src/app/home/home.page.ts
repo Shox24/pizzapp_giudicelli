@@ -3,6 +3,7 @@ import { Component, ViewChild, ElementRef } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { CartModalPage } from '../pages/cart-modal/cart-modal.page';
 import { BehaviorSubject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
  
 @Component({
   selector: 'app-home',
@@ -13,13 +14,18 @@ export class HomePage {
   cart = [];
   products = [];
   cartItemCount: BehaviorSubject<number>;
+  mypizza: any;
  
   @ViewChild('cart', {static: false, read: ElementRef})fab: ElementRef;
  
-  constructor(private cartService: CartService, private modalCtrl: ModalController) {}
+  constructor(private cartService: CartService, private modalCtrl: ModalController, private http: HttpClient) {
+    this.cartService.get().then((data: Array<any>) => {
+      this.mypizza = data;
+      console.log(this.mypizza);
+  });
+  }
  
   ngOnInit() {
-    this.products = this.cartService.getProducts();
     this.cart = this.cartService.getCart();
     this.cartItemCount = this.cartService.getCartItemCount();
   }
