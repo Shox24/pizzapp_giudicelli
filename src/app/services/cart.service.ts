@@ -5,8 +5,8 @@ import { Pizza } from '../models/pizza'
  
 export interface Product {
   id: number;
-  name: string;
-  price: number;
+  nom: string;
+  prix: number;
   amount: number;
 }
 @Injectable({
@@ -21,10 +21,6 @@ export class CartService {
   private cartItemCount = new BehaviorSubject(0);
  
   constructor(private http: HttpClient) {}
-
-  sayHello(id: number){
-    console.log("sayHello('" + id + "')");
-}
 
 get()
 {
